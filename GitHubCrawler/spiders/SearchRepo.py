@@ -2,13 +2,15 @@
 import logging
 from random import randrange
 
-import scrapy
-from scrapy import Request
+from scrapy import Request, Spider
+
+from GitHubCrawler.spiders.entities import ReposPage
+from GitHubCrawler.spiders.factories import build_git_search_result_extractor_use_case
 
 logger = logging.getLogger(__name__)
 
 
-class SearchRepoSpider(scrapy.Spider):
+class SearchRepoSpider(Spider):
     name = 'search_repos'
     allowed_domains = ['github.com']
     start_urls = ['https://github.com/search?q=nova+css/']
@@ -28,7 +30,7 @@ class SearchRepoSpider(scrapy.Spider):
 
     def parse(self, response):
         print('not called through proxy')
-        request = scrapy.Request('https://github.com/search?q=nova+css', callback=self.parse_proxied_response)
+        request = Request('https://github.com/search?q=nova+css', callback=self.parse_proxied_response)
 
         yield request
 
@@ -37,12 +39,7 @@ class SearchRepoSpider(scrapy.Spider):
 
     def parse_proxied_response(self, response):
         print(f'called through a proxy {response.url}')
+        use_case = build_git_search_result_extractor_use_case()
+        result = use_case.execute(ReposPage(response))
 
-        repo_list = response.css('.repo-list')
-        print(str(repo_list))
-        repo_list_items = repo_list.css('.repo-list-item')
-        for item in repo_list_items:
-            link = item.css('a::attr(href)').extract_first()
-            print(str(link))
-
-        pass
+        return result
