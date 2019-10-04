@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 from random import randrange
 
 from scrapy import Request, Spider
 
 from GitHubCrawler.spiders.entities import ReposPage
-from GitHubCrawler.spiders.factories import build_git_search_result_extractor_use_case
+from GitHubCrawler.spiders.factories import build_git_search_result_extractor_use_case, build_search_url_generator
 
 logger = logging.getLogger(__name__)
 
@@ -13,13 +14,17 @@ logger = logging.getLogger(__name__)
 class SearchRepoSpider(Spider):
     name = 'search_repos'
     allowed_domains = ['github.com']
-    start_urls = ['https://github.com/search?q=nova+css/']
+    start_urls = ['file:///home/victor/Workspace/Python/data/RedPoint/GitHubSearchRepos.html']
+    # start_urls = ['https://github.com/search?q=']
     proxy_list = ['http://165.227.71.60:80', 'http://192.140.42.83:52852', 'http://182.52.238.44:37758']
 
     def start_requests(self):
         print('calling start requests')
+
+        url_generator = build_search_url_generator()
+
         yield Request(
-            url='https://github.com/search?q=nova+css',
+            url=url_generator.execute(),
             callback=self.parse_proxied_response,
             errback=self.parse_error,
             meta={
