@@ -13,10 +13,10 @@ class TestSpiders:
 
         scenario.when_parsing_the_search_result_page()
 
-        scenario.then_the_result_will_contain_the_repo_url_list()
+        scenario.then_the_result_will_contain_the_domain_repo_url_list()
 
     class Scenario:
-        TEST_REPO_LINKS = ['repo link1', 'repo link2', 'repo link3']
+        TEST_REPO_LINKS = ['repo_link1', 'repo_link2', 'repo_link3']
 
         def __init__(self):
             self.page_data = MagicMock()
@@ -37,7 +37,7 @@ class TestSpiders:
         def when_parsing_the_search_result_page(self):
             self.crawl_result = list(self.target.parse_proxied_response(self.page_data))
 
-        def then_the_result_will_contain_the_repo_url_list(self):
+        def then_the_result_will_contain_the_domain_repo_url_list(self):
             assert len(self.crawl_result) == len(self.TEST_REPO_LINKS)
             for i in range(len(self.TEST_REPO_LINKS)):
-                assert self.crawl_result[i] == self.TEST_REPO_LINKS[i]
+                assert self.crawl_result[i] == f'https://github.com/{self.TEST_REPO_LINKS[i]}'
