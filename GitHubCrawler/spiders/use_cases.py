@@ -5,9 +5,15 @@ from GitHubCrawler.spiders.entities import GitHubSearchPage
 
 class SearchResultLinkExtractorUseCase:
 
-    def execute(self, web_page: GitHubSearchPage) -> Iterator[str]:
+    def __init__(self, output_service):
+        self.output_service = output_service
+
+    def execute(self, web_page: GitHubSearchPage):
+        result = []
         for link in web_page.get_list_of_links():
-            yield f'https://github.com/{link}'
+            result.append(f'https://github.com/{link}')
+
+        self.output_service.save_response(result)
 
 
 class SearchUrlGeneratorUseCase:

@@ -60,7 +60,7 @@ class TestSpiders:
             self.initial_request = list(self.target.start_requests())
 
         def when_parsing_the_search_result_page(self):
-            self.crawl_result = list(self.target.parse_proxied_response(self.page_data))
+            self.target.parse_proxied_response(self.page_data)
 
         def then_the_request_will_contain_the_input_keywords(self):
             assert len(self.initial_request) == 1
@@ -68,6 +68,9 @@ class TestSpiders:
             assert self.initial_request[0].url == f'https://github.com/search?q={keyword_query_string}'
 
         def then_the_result_will_contain_the_domain_repo_url_list(self):
-            assert len(self.crawl_result) == len(self.TEST_REPO_LINKS)
+            raw_result = self.file_open.return_value.__enter__.return_value.write.call_args[0][0]
+            crawl_result = json.loads(raw_result)
+
+            assert len(crawl_result) == len(self.TEST_REPO_LINKS)
             for i in range(len(self.TEST_REPO_LINKS)):
-                assert self.crawl_result[i] == f'https://github.com/{self.TEST_REPO_LINKS[i]}'
+               assert crawl_result[i] == f'https://github.com/{self.TEST_REPO_LINKS[i]}'

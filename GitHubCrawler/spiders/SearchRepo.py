@@ -45,6 +45,4 @@ class SearchRepoSpider(Spider):
     def parse_proxied_response(self, response):
         print(f'called through a proxy {response.url}')
         use_case = build_git_search_result_extractor_use_case()
-        result = use_case.execute(ReposPage(response))
-
-        return result
+        use_case.execute(ReposPage(response))
