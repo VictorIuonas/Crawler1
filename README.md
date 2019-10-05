@@ -26,7 +26,7 @@ Create an input.json following this struture:
 
 Run the following two commands:
 
-docker build -t mycrawler --build-arg input_config=input.json .
-docker run -v $(pwd):/output_dir mycrawler
+docker build -t mycrawler --build-arg input_config=input.json . <br />
+docker run -v $(pwd):/output_dir mycrawler <br />
 
 
