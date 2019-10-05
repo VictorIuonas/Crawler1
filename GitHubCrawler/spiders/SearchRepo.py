@@ -17,10 +17,14 @@ class SearchRepoSpider(Spider):
     # start_urls = ['https://github.com/search?q=']
     proxy_list = ['http://165.227.71.60:80', 'http://192.140.42.83:52852', 'http://182.52.238.44:37758']
 
+    def __init__(self, config_file=None, *args, **kwargs):
+        super(SearchRepoSpider, self).__init__(*args, **kwargs)
+        self.config_file = config_file
+
     def start_requests(self):
         print('calling start requests')
 
-        url_generator = build_search_url_generator()
+        url_generator = build_search_url_generator(config_file_path=self.config_file)
 
         yield Request(
             url=url_generator.execute(),
@@ -44,7 +48,7 @@ class SearchRepoSpider(Spider):
     def parse_repo_search_results(self, response):
         print(f'response for github repos search results {response.url}')
 
-        redirect_link_extractor = build_redirect_link_extractor_use_case()
+        redirect_link_extractor = build_redirect_link_extractor_use_case(config_file_path=self.config_file)
         redirect_link, target_page = redirect_link_extractor.execute(ReposPage(response), ResultPageType.Repos)
 
         if target_page == ResultPageType.Wikis:

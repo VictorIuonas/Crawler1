@@ -3,6 +3,15 @@ from typing import List
 
 from GitHubCrawler.spiders.entities import ResultPageType
 
+config = {}
+
+
+def read_config(file_path):
+    global config
+    with open(file_path) as r:
+        content = r.read()
+        config = json.loads(content)
+
 
 class ConfigService:
     result_page_type_converter = {
@@ -11,11 +20,11 @@ class ConfigService:
         'repositories': ResultPageType.Repos
     }
 
-    def __init__(self):
-        self.config = {}
-        with open('input.json') as r:
-            content = r.read()
-            self.config = json.loads(content)
+    def __init__(self, file: str):
+        if not config:
+            read_config(file)
+
+        self.config = config
 
     def get_search_keywords(self) -> List[str]:
         return self.config['keywords']
