@@ -1,4 +1,4 @@
-from typing import Iterator, Optional
+from typing import Tuple
 
 from GitHubCrawler.spiders.entities import GitHubSearchPage, ResultPageType
 
@@ -30,10 +30,14 @@ class RedirectLinkExtractorUseCase:
     def __init__(self, config_service):
         self.config_service = config_service
 
-    def execute(self, web_page: GitHubSearchPage, current_page_type: ResultPageType) -> Optional[str]:
+    def execute(
+            self, web_page: GitHubSearchPage, current_page_type: ResultPageType
+    ) -> Tuple[str, ResultPageType]:
         target_page_type = self.config_service.get_search_result_type()
 
         if target_page_type == ResultPageType.Wikis:
-            return 'https://github.com' + web_page.get_wikis_link()
+            return ('https://github.com' + web_page.get_wikis_link(), target_page_type)
+        if target_page_type == ResultPageType.Issues:
+            return ('https://github.com' + web_page.get_issues_link(), target_page_type)
 
-        return None
+        return ('https://github.com' + web_page.get_repos_link(), target_page_type)

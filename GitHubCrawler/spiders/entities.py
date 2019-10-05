@@ -25,6 +25,16 @@ class GitHubSearchPage(abc.ABC):
 
         return link_value
 
+    def get_issues_link(self) -> str:
+        link_value = self.scrapped_page.css('span[data-search-type="Issues"]').xpath('../@href').extract_first()
+
+        return link_value
+
+    def get_repos_link(self) -> str:
+        link_value = self.scrapped_page.css('span[data-search-type="Repositories"]').xpath('../@href').extract_first()
+
+        return link_value
+
 class ReposPage(GitHubSearchPage):
 
     def get_list_of_links(self) -> Iterator[str]:
@@ -41,6 +51,16 @@ class WikisPage(GitHubSearchPage):
     def get_list_of_links(self) -> Iterator[str]:
         wikis_links = self.scrapped_page.css('#wiki_search_results').css('.h5')
         for link_component in wikis_links:
+            link = link_component.css('::attr(href)').extract_first()
+            print(link)
+            yield link
+
+
+class IssuesPage(GitHubSearchPage):
+
+    def get_list_of_links(self) -> Iterator[str]:
+        issuess_links = self.scrapped_page.css('.issue-list').css('h3').css('a')
+        for link_component in issuess_links:
             link = link_component.css('::attr(href)').extract_first()
             print(link)
             yield link

@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
-from random import randrange
 
 from scrapy import Request, Spider
 
-from GitHubCrawler.spiders.entities import ReposPage, ResultPageType, WikisPage
+from GitHubCrawler.spiders.entities import ReposPage, ResultPageType, WikisPage, IssuesPage
 from GitHubCrawler.spiders.factories import build_git_search_result_extractor_use_case, build_search_url_generator, \
     build_redirect_link_extractor_use_case
 
@@ -47,10 +45,14 @@ class SearchRepoSpider(Spider):
         print(f'response for github repos search results {response.url}')
 
         redirect_link_extractor = build_redirect_link_extractor_use_case()
-        redirect_link = redirect_link_extractor.execute(ReposPage(response), ResultPageType.Repos)
+        redirect_link, target_page = redirect_link_extractor.execute(ReposPage(response), ResultPageType.Repos)
 
-        if redirect_link:
+        if target_page == ResultPageType.Wikis:
             yield Request(url=redirect_link, callback=self.parse_wikis_search_result, meta={
+                'max_retries_times': 0
+            })
+        elif target_page == ResultPageType.Issues:
+            yield Request(url=redirect_link, callback=self.parse_issues_search_result, meta={
                 'max_retries_times': 0
             })
         else:
@@ -62,3 +64,9 @@ class SearchRepoSpider(Spider):
 
         link_extractor = build_git_search_result_extractor_use_case()
         link_extractor.execute(WikisPage(response))
+
+    def parse_issues_search_result(self, response):
+        print(f'response for github wikis search results {response.url}')
+
+        link_extractor = build_git_search_result_extractor_use_case()
+        link_extractor.execute(IssuesPage(response))
