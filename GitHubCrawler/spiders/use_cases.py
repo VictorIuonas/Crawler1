@@ -1,6 +1,6 @@
-from typing import Iterator
+from typing import Iterator, Optional
 
-from GitHubCrawler.spiders.entities import GitHubSearchPage
+from GitHubCrawler.spiders.entities import GitHubSearchPage, ResultPageType
 
 
 class SearchResultLinkExtractorUseCase:
@@ -23,3 +23,17 @@ class SearchUrlGeneratorUseCase:
 
     def execute(self) -> str:
         return 'https://github.com/search?q=' + str.join('+', self.config_service.get_search_keywords())
+
+
+class RedirectLinkExtractorUseCase:
+
+    def __init__(self, config_service):
+        self.config_service = config_service
+
+    def execute(self, web_page: GitHubSearchPage, current_page_type: ResultPageType) -> Optional[str]:
+        target_page_type = self.config_service.get_search_result_type()
+
+        if target_page_type == ResultPageType.Wikis:
+            return 'https://github.com' + web_page.get_wikis_link()
+
+        return None

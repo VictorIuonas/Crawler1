@@ -5,8 +5,9 @@ from random import randrange
 
 from scrapy import Request, Spider
 
-from GitHubCrawler.spiders.entities import ReposPage
-from GitHubCrawler.spiders.factories import build_git_search_result_extractor_use_case, build_search_url_generator
+from GitHubCrawler.spiders.entities import ReposPage, ResultPageType, WikisPage
+from GitHubCrawler.spiders.factories import build_git_search_result_extractor_use_case, build_search_url_generator, \
+    build_redirect_link_extractor_use_case
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class SearchRepoSpider(Spider):
 
         yield Request(
             url=url_generator.execute(),
-            callback=self.parse_proxied_response,
+            callback=self.parse_repo_search_results,
             errback=self.parse_error,
             meta={
                 # 'proxy': self.proxy_list[randrange(len(self.proxy_list))],
@@ -35,14 +36,29 @@ class SearchRepoSpider(Spider):
 
     def parse(self, response):
         print('not called through proxy')
-        request = Request('https://github.com/search?q=nova+css', callback=self.parse_proxied_response)
+        request = Request('https://github.com/search?q=nova+css', callback=self.parse_repo_search_results)
 
         yield request
 
     def parse_error(self, failure):
         print(f'failure: {repr(failure)}')
 
-    def parse_proxied_response(self, response):
-        print(f'called through a proxy {response.url}')
-        use_case = build_git_search_result_extractor_use_case()
-        use_case.execute(ReposPage(response))
+    def parse_repo_search_results(self, response):
+        print(f'response for github repos search results {response.url}')
+
+        redirect_link_extractor = build_redirect_link_extractor_use_case()
+        redirect_link = redirect_link_extractor.execute(ReposPage(response), ResultPageType.Repos)
+
+        if redirect_link:
+            yield Request(url=redirect_link, callback=self.parse_wikis_search_result, meta={
+                'max_retries_times': 0
+            })
+        else:
+            link_extractor = build_git_search_result_extractor_use_case()
+            link_extractor.execute(ReposPage(response))
+
+    def parse_wikis_search_result(self, response):
+        print(f'response for github wikis search results {response.url}')
+
+        link_extractor = build_git_search_result_extractor_use_case()
+        link_extractor.execute(WikisPage(response))

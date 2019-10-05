@@ -1,16 +1,27 @@
 import json
 from typing import List
 
+from GitHubCrawler.spiders.entities import ResultPageType
+
 
 class ConfigService:
+    result_page_type_converter = {
+        'wikis': ResultPageType.Wikis,
+        'issues': ResultPageType.Issues,
+        'repositories': ResultPageType.Repos
+    }
 
-    def get_search_keywords(self) -> List[str]:
-        config = {}
+    def __init__(self):
+        self.config = {}
         with open('input.json') as r:
             content = r.read()
-            config = json.loads(content)
+            self.config = json.loads(content)
 
-        return config['keywords']
+    def get_search_keywords(self) -> List[str]:
+        return self.config['keywords']
+
+    def get_search_result_type(self) -> ResultPageType:
+        return self.result_page_type_converter[self.config['type'].lower()]
 
 
 class OutputUrlService:
