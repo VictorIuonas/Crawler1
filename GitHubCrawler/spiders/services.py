@@ -37,5 +37,6 @@ class OutputUrlService:
 
     def save_response(self, urls: List[str]):
         raw_data = json.dumps(urls)
+        print(raw_data)
         with open('output.json', 'w+') as w:
             w.write(raw_data)
